@@ -3,6 +3,7 @@ __pycache__/
 *.pyc
 *.jar
 .venv/
+llm_app/.venv/
 
 # Local outputs from the bronze ingestion script.
 tmp/

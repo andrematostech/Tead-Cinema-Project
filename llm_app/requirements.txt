@@ -1,6 +1,6 @@
-openai
-trino
-streamlit
-pandas
-python-dotenv
-pydantic
+openai==1.75.0
+trino==0.336.0
+streamlit==1.44.1
+pandas==2.2.3
+python-dotenv==1.0.1
+pydantic==2.11.3

@@ -4,28 +4,50 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+function Get-ComposeNetworkName {
+    param(
+        [string]$ContainerName = "tead-trino"
+    )
+
+    $networkName = docker inspect `
+        --format '{{range $name, $value := .NetworkSettings.Networks}}{{println $name}}{{end}}' `
+        $ContainerName
+
+    $networkName = ($networkName | Select-Object -First 1).Trim()
+
+    if (-not $networkName) {
+        throw "Could not resolve the Docker network for container $ContainerName."
+    }
+
+    return $networkName
+}
+
 function Wait-ForTrino {
     param(
         [int]$MaxAttempts = 20
     )
 
     for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
-        try {
-            docker compose exec -T trino trino --execute "SELECT 1" | Out-Null
+        $status = docker inspect `
+            --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}unknown{{end}}' `
+            tead-trino
+
+        if ($status.Trim() -eq "healthy") {
             return
         }
-        catch {
-            if ($attempt -eq $MaxAttempts) {
-                throw
-            }
 
-            Start-Sleep -Seconds 3
+        if ($attempt -eq $MaxAttempts) {
+            throw "Trino did not become healthy in time."
         }
+
+        Start-Sleep -Seconds 3
     }
 }
 
 Push-Location $ProjectRoot
 try {
+    $composeNetwork = Get-ComposeNetworkName
+
     Write-Host "Checking service health ..."
     docker compose ps | Out-Host
 
@@ -48,13 +70,14 @@ SELECT 'gold' AS layer, count(*) AS row_count FROM iceberg.gold.movie_performanc
     docker compose exec -T trino trino --execute @"
 SELECT source_system, source_dataset, source_file_name, ingestion_batch_id, raw_object_path
 FROM iceberg.bronze.movies_raw
+ORDER BY ingested_at DESC
 LIMIT 3
 "@ | Out-Host
 
     Write-Host ""
     Write-Host "Checking raw bronze objects in MinIO ..."
     docker run --rm `
-        --network tead-cinema-project-master_default `
+        --network $composeNetwork `
         --entrypoint /bin/sh `
         minio/mc:RELEASE.2025-02-21T16-00-46Z `
         -c "mc alias set local http://minio:9000 minio minio123 >/dev/null && mc find local/lakehouse/bronze --name '*.parquet'" | Out-Host

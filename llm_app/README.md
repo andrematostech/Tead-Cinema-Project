@@ -52,3 +52,24 @@ Copy `.env.example` to a local `.env` file and set:
 - The add-on should validate SQL before execution.
 - The local `.env` file should never be committed.
 - The default model for this add-on is `gpt-5-mini`.
+
+## Run the add-on
+
+From the project root:
+
+- `pip install -r llm_app/requirements.txt`
+- `streamlit run llm_app/app.py`
+- `python llm_app/smoke_test.py`
+- `powershell -ExecutionPolicy Bypass -File .\llm_app\run_llm_app.ps1`
+
+The UI is intentionally minimal:
+
+- one text box
+- one run button
+- generated SQL
+- result table
+- short explanation
+
+## Reproducibility
+
+The Python package versions in `requirements.txt` are pinned so the add-on is easier to reproduce.

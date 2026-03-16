@@ -106,7 +106,18 @@ def cleanup_legacy_objects(metadata: dict[str, str]) -> None:
         )
 
 
-def ensure_bronze_table(
+def ensure_bronze_table_exists(cursor) -> None:
+    try:
+        cursor.execute("DESCRIBE iceberg.bronze.movies_raw")
+        cursor.fetchall()
+    except Exception as exc:
+        raise ValueError(
+            "The Bronze table iceberg.bronze.movies_raw does not exist. "
+            "Run sql/bronze/create_tables.sql before running ingestion."
+        ) from exc
+
+
+def load_bronze_table(
     rows: list[dict[str, str]],
     raw_object_path: str,
     metadata: dict[str, str],
@@ -120,36 +131,8 @@ def ensure_bronze_table(
     )
     cursor = connection.cursor()
 
-    # This table is the reproducible raw landing table for the prototype.
-    cursor.execute(
-        """
-        CREATE TABLE IF NOT EXISTS iceberg.bronze.movies_raw (
-            movie_id INTEGER,
-            title VARCHAR,
-            release_date DATE,
-            budget BIGINT,
-            revenue BIGINT,
-            vote_average DOUBLE,
-            vote_count INTEGER,
-            imdb_id VARCHAR,
-            original_language VARCHAR,
-            source_system VARCHAR,
-            source_dataset VARCHAR,
-            source_file_name VARCHAR,
-            ingestion_batch_id VARCHAR,
-            raw_object_path VARCHAR,
-            ingested_at TIMESTAMP(6) WITH TIME ZONE
-        )
-        WITH (
-            format = 'PARQUET'
-        )
-        """
-    )
-
-    # Keep the table aligned with the latest prototype columns if it already exists.
-    cursor.execute("ALTER TABLE iceberg.bronze.movies_raw ADD COLUMN IF NOT EXISTS source_dataset VARCHAR")
-    cursor.execute("ALTER TABLE iceberg.bronze.movies_raw ADD COLUMN IF NOT EXISTS source_file_name VARCHAR")
-    cursor.execute("ALTER TABLE iceberg.bronze.movies_raw ADD COLUMN IF NOT EXISTS ingestion_batch_id VARCHAR")
+    # SQL owns the Bronze schema. Python only loads rows into the existing table.
+    ensure_bronze_table_exists(cursor)
 
     cursor.execute("DELETE FROM iceberg.bronze.movies_raw")
 
@@ -219,7 +202,7 @@ def main() -> None:
     )
     cleanup_legacy_objects(metadata)
     raw_object_path = upload_to_minio(parquet_path, object_name)
-    ensure_bronze_table(rows, raw_object_path, metadata)
+    load_bronze_table(rows, raw_object_path, metadata)
 
     print(f"Wrote Parquet file to {parquet_path}")
     print(f"Uploaded raw Bronze object to {raw_object_path}")
