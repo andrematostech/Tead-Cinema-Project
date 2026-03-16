@@ -1,0 +1,12 @@
+# Local Python caches and virtualenvs created while iterating on the prototype.
+__pycache__/
+*.pyc
+*.jar
+.venv/
+
+# Local outputs from the bronze ingestion script.
+tmp/
+
+# Local environment files with secrets.
+.env
+llm_app/.env

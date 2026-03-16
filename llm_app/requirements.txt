@@ -1,0 +1,6 @@
+openai
+trino
+streamlit
+pandas
+python-dotenv
+pydantic

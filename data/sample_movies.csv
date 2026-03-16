@@ -1,0 +1,11 @@
+movie_id,title,release_date,budget,revenue,vote_average,vote_count,imdb_id,original_language,source_system
+550,Fight Club,1999-10-15,63000000,100853753,8.433,28742,tt0137523,en,tmdb_sample
+680,Pulp Fiction,1994-09-10,8000000,213928762,8.489,27641,tt0110912,en,tmdb_sample
+13,Forrest Gump,1994-06-23,55000000,678226465,8.468,26419,tt0109830,en,tmdb_sample
+24,Kill Bill: Vol. 1,2003-10-10,30000000,180906076,7.971,17465,tt0266697,en,tmdb_sample
+278,The Shawshank Redemption,1994-09-23,25000000,28341469,8.707,27703,tt0111161,en,tmdb_sample
+155,The Dark Knight,2008-07-16,185000000,1004558444,8.52,32383,tt0468569,en,tmdb_sample
+120,The Lord of the Rings: The Fellowship of the Ring,2001-12-18,93000000,871368364,8.418,25838,tt0120737,en,tmdb_sample
+24428,The Avengers,2012-04-25,220000000,1518815515,7.71,30723,tt0848228,en,tmdb_sample
+27205,Inception,2010-07-15,160000000,825532764,8.369,37974,tt1375666,en,tmdb_sample
+157336,Interstellar,2014-11-05,165000000,701729206,8.452,35310,tt0816692,en,tmdb_sample
